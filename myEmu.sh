@@ -2,6 +2,8 @@
 
 LINUX_VER=linux-3.10
 BUSYBOX_VER=busybox-1.21.1
+PROCESSOR_COUNT=4
+LINUX_KERNEL_FAMILY=3.0
 
 function runCheck {
     "$@"
@@ -13,7 +15,10 @@ function runCheck {
     return $status
 }
 echo "This is NOT a silent install, there are passwords to enter and menuconfigs to configure. Refer GitHub Wiki for more details."
-echo "Checking availability of \nARM GCC CROSS COMPILER: gcc-arm-linux-gnueabi \nQEMU HARDWARE EMULATOR: qemu \nNCURSES DEV Libraries: libncurses5-dev"
+echo "Checking availability"
+echo "ARM GCC CROSS COMPILER: gcc-arm-linux-gnueabi"
+echo "QEMU HARDWARE EMULATOR: qemu"
+echo "NCURSES DEV Library: libncurses5-dev"
 sudo apt-get install gcc-arm-linux-gnueabi qemu libncurses5-dev
 CLEAN=0
 if [ "$1" == "clean" ]; then
@@ -31,7 +36,7 @@ mkdir -p $MY_DOWNLOADS
 cd $MY_DOWNLOADS
 if [ ! -f "$LINUX_VER.tar.bz2" ]; then
 	echo "$LINUX_VER not found in "$MY_DOWNLOADS". Downloading from kernel.org"
-	runCheck wget https://www.kernel.org/pub/linux/kernel/v3.0/$LINUX_VER.tar.bz2
+	runCheck wget https://www.kernel.org/pub/linux/kernel/v$LINUX_KERNEL_FAMILY/$LINUX_VER.tar.bz2
 fi
 if [ ! -d "$MY_ROOT/$LINUX_VER/" ]; then
 	runCheck tar xvjf $LINUX_VER.tar.bz2
@@ -40,7 +45,7 @@ fi
 cd $MY_ROOT/$LINUX_VER/
 LINUX_SRC=`pwd`
 runCheck make vexpress_defconfig
-runCheck make -j 2 all
+runCheck make -j $PROCESSOR_COUNT all
 cd $MY_DOWNLOADS
 if [ ! -f "$BUSYBOX_VER.tar.bz2" ]; then
         echo "$BUSYBOX_VER not found in "$MY_DOWNLOADS". Downloading from busybox.net"
