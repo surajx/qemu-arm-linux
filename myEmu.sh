@@ -63,7 +63,7 @@ echo "Busybox Settings==>Build Options==> Select the option Build BuzyBox binary
 echo "Network Utilities==> Omit the Setup RPC Utilities  -  This is optional, compiling with RPC might fail on some systems."
 read -p "Press [Enter] key to start menuconfig..."
 runCheck make menuconfig
-runCheck make install
+runCheck make -j $PROCESSOR_COUNT install
 cd _install
 BUSYBOX_INSTALL=`pwd`
 mkdir -p proc/ sys/ dev/ memDriver/ etc/ etc/init.d
