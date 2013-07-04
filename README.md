@@ -51,6 +51,7 @@
   >Traverse in the GUI
 ######Busybox Settings ==> Build Options 
 ######SELECT Build BusyBox as a static binary(no shared libs)
+######Network Utilities==> Omit the Setup RPC Utilities (Optional, compiling with RPC might fail on some systems.
   >If you are getting an error that __curses.h__ is missing 
   >install ncurses-dev package.
 
