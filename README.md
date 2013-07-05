@@ -1,7 +1,7 @@
 
 ##0. Introduction
-  Following is a writeup on how to compile Linux kernel, 
-  busybox for ARM architecture and to load a simple device driver on the emulated system.
+  Following is a writeup on how to compile Linux kernel& 
+  BusyBox for ARM architecture and to load a simple device driver on the emulated system.
 ##### Prerequisites
         Ubuntu Linux machine with build utils and build essentials like make etc.
         Working internet Connection.
@@ -115,7 +115,8 @@ mount -t sysfs none /sys
 #####Insert our driver module into the kernel.
         cd memDriver/
         insmod memory.ko
-  >printk messages in module_init function should be now seen in dmesg|tail
+  >printk messages in module_init function should be now seen in **dmesg|tail**
+  >This should enable us to now read/write a single byte of data from/to memory.
         
 #####Write to device
     echo -n 4 > /dev/mymem
