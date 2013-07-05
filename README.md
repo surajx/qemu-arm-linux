@@ -47,6 +47,7 @@
   >Additionally use a GUI driven build configuration settings page
   >to tell BusyBox to compile everything statically and leave out 
   >certain unwanted and troublesome modules.
+
         make menuconfig
   >Traverse in the GUI
 ######Busybox Settings ==> Build Options 
