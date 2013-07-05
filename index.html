@@ -1,0 +1,288 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Linux, ARM and QEMU by surajx</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Linux, ARM and QEMU</h1>
+        <p class="header">Script for compiling Linux, BusyBox for AMR and running it on QEMU.</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/surajx/qemu-arm-linux/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/surajx/qemu-arm-linux/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/surajx/qemu-arm-linux">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/surajx">surajx</a></p>
+
+
+      </header>
+      <section>
+        <h2>
+<a name="0-introduction" class="anchor" href="#0-introduction"><span class="octicon octicon-link"></span></a>0. Introduction</h2>
+
+<p>Following is a writeup on how to compile Linux kernel&amp; 
+  BusyBox for ARM architecture and to load a simple device driver on the emulated system.</p>
+
+<h5>
+<a name="prerequisites" class="anchor" href="#prerequisites"><span class="octicon octicon-link"></span></a>Prerequisites</h5>
+
+<pre><code>    Ubuntu Linux machine with build utils and build essentials like make etc.
+    Working internet Connection.
+</code></pre>
+
+<blockquote>
+<p>The Shell script <strong>myEmu.sh</strong> in my repository automates the below outlined process 
+and boots up a linux kernel running on ARM processor (of course this 
+is NOT a silent run, passwords have to be entered and menuconfigs configured).</p>
+</blockquote>
+
+<h2>
+<a name="1-compiling-linux-from-source-for-arm-architecture" class="anchor" href="#1-compiling-linux-from-source-for-arm-architecture"><span class="octicon octicon-link"></span></a>1. Compiling Linux from Source for ARM architecture</h2>
+
+<h5>
+<a name="get-linux-kernel-source" class="anchor" href="#get-linux-kernel-source"><span class="octicon octicon-link"></span></a>Get Linux Kernel source</h5>
+
+<pre><code>    wget https://www.kernel.org/pub/linux/kernel/v3.0/linux-3.10.tar.bz2
+</code></pre>
+
+<h5>
+<a name="get-cross-compilation-tool-chain-for-arm-architecture" class="anchor" href="#get-cross-compilation-tool-chain-for-arm-architecture"><span class="octicon octicon-link"></span></a>Get cross compilation tool-chain for ARM architecture</h5>
+
+<pre><code>    sudo apt-get install gcc-arm-linux-gnueabi
+</code></pre>
+
+<h5>
+<a name="extract-the-linux-source-from-the-gzipped-tarball" class="anchor" href="#extract-the-linux-source-from-the-gzipped-tarball"><span class="octicon octicon-link"></span></a>Extract the linux source from the Gzipped tarball</h5>
+
+<pre><code>    tar xjvf linux-3.10.tar.bz2
+</code></pre>
+
+<h5>
+<a name="set-environment-variables-to-tell-the-linux-build-system-to-build-for-arm-and-use-a-specific-cross-compiler" class="anchor" href="#set-environment-variables-to-tell-the-linux-build-system-to-build-for-arm-and-use-a-specific-cross-compiler"><span class="octicon octicon-link"></span></a>Set environment variables to tell the Linux Build system to build for ARM and use a specific cross-compiler.</h5>
+
+<pre><code>    export ARCH=arm
+    export CROSS_COMPILE=arm-linux-gnueabi-
+</code></pre>
+
+<blockquote>
+<p>Note the hyphen at the end, the <strong>CROSS_COMPILE</strong> env 
+variable is a prefix added to the default compiler to get the cross compiler.</p>
+</blockquote>
+
+<h5>
+<a name="configure-linux-build-system-to-compile-for-the-versatile-express-family-of-boards" class="anchor" href="#configure-linux-build-system-to-compile-for-the-versatile-express-family-of-boards"><span class="octicon octicon-link"></span></a>Configure Linux Build system to compile for the versatile express family of boards.</h5>
+
+<pre><code>    cd linux-3.10
+    make vexpress_defconfig
+</code></pre>
+
+<blockquote>
+<p>This creates a <em>.config</em> hidden file containing all the build configurations.</p>
+</blockquote>
+
+<h5>
+<a name="actually-build-the-linux-kernel-code" class="anchor" href="#actually-build-the-linux-kernel-code"><span class="octicon octicon-link"></span></a>Actually Build the Linux Kernel Code</h5>
+
+<pre><code>    make -j 4 all
+</code></pre>
+
+<blockquote>
+<p>The -j 4 option is to enable parallelism during compilation.
+Once the Build is Complete, the linux Kernel Image for ARM architecture 
+is saved as <strong>zImage</strong> under <strong>linux-3.10/arch/arm/boot/</strong></p>
+</blockquote>
+
+<h2>
+<a name="2-compiling-busybox-from-source-for-arm-architecture" class="anchor" href="#2-compiling-busybox-from-source-for-arm-architecture"><span class="octicon octicon-link"></span></a>2. Compiling BusyBox from source for ARM architecture</h2>
+
+<h5>
+<a name="get-busybox-source" class="anchor" href="#get-busybox-source"><span class="octicon octicon-link"></span></a>Get BusyBox source</h5>
+
+<pre><code>    wget http://www.busybox.net/downloads/busybox-1.21.1.tar.bz2
+</code></pre>
+
+<h5>
+<a name="extract-source-from-gzipped-tarball" class="anchor" href="#extract-source-from-gzipped-tarball"><span class="octicon octicon-link"></span></a>Extract source from Gzipped tarball</h5>
+
+<pre><code>    tar xjvf busybox-1.21.1.tar.bz2
+</code></pre>
+
+<h5>
+<a name="configure-the-busybox-build-system-using-the-default-configurations" class="anchor" href="#configure-the-busybox-build-system-using-the-default-configurations"><span class="octicon octicon-link"></span></a>Configure the BusyBox Build system using the default configurations.</h5>
+
+<pre><code>    cd busybox-1.21.1
+    make defconfig
+</code></pre>
+
+<blockquote>
+<p>Additionally use a GUI driven build configuration settings page
+to tell BusyBox to compile everything statically and leave out 
+certain unwanted and troublesome modules.</p>
+</blockquote>
+
+<pre><code>    make menuconfig
+</code></pre>
+
+<blockquote>
+<p>Traverse in the GUI</p>
+
+<h6>
+<a name="busybox-settings--build-options" class="anchor" href="#busybox-settings--build-options"><span class="octicon octicon-link"></span></a>Busybox Settings ==&gt; Build Options</h6>
+
+<h6>
+<a name="select-build-busybox-as-a-static-binaryno-shared-libs" class="anchor" href="#select-build-busybox-as-a-static-binaryno-shared-libs"><span class="octicon octicon-link"></span></a>SELECT Build BusyBox as a static binary(no shared libs)</h6>
+
+<h6>
+<a name="network-utilities-omit-the-setup-rpc-utilities-optional-compiling-with-rpc-might-fail-on-some-systems" class="anchor" href="#network-utilities-omit-the-setup-rpc-utilities-optional-compiling-with-rpc-might-fail-on-some-systems"><span class="octicon octicon-link"></span></a>Network Utilities==&gt; Omit the Setup RPC Utilities (Optional, compiling with RPC might fail on some systems.</h6>
+
+<p>If you are getting an error that <strong>curses.h</strong> is missing 
+install ncurses-dev package.</p>
+</blockquote>
+
+<pre><code>    sudo apt-get install libncurses5-dev
+</code></pre>
+
+<h5>
+<a name="actually-build-busybox-code" class="anchor" href="#actually-build-busybox-code"><span class="octicon octicon-link"></span></a>Actually Build BusyBox Code</h5>
+
+<pre><code>    make -j 4 install
+</code></pre>
+
+<blockquote>
+<p>Once the build is complete, a folder named <strong>_install</strong> is created. 
+This folder contains a bare structure of the linux root file system. 
+As you can see some important folder like proc, dev, sys etc are missing. 
+So lets go ahead and create them.</p>
+</blockquote>
+
+<pre><code>    cd _install
+    mkdir proc sys dev etc etc/init.d
+</code></pre>
+
+<blockquote>
+<p>It is not enough that we just create the special directories, we have 
+to tell the kernel to mount special services to their respective directories.</p>
+</blockquote>
+
+<h5>
+<a name="create-etcinitdrcs-file-and-enter-the-following-shell-code" class="anchor" href="#create-etcinitdrcs-file-and-enter-the-following-shell-code"><span class="octicon octicon-link"></span></a>Create etc/init.d/rcS file and enter the following shell code</h5>
+
+<pre lang="shell"><code>#!/bin/sh
+mount -t proc none /proc
+mount -t sysfs none /sys
+/sbin/mdev -s
+</code></pre>
+
+<blockquote>
+<p>/sbin/init is usually the first program run by the linux kernel and 
+its default behaviour is to execute the <strong>/etc/init.d/rcS</strong> file.</p>
+</blockquote>
+
+<h5>
+<a name="mark-rcs-file-as-executable" class="anchor" href="#mark-rcs-file-as-executable"><span class="octicon octicon-link"></span></a>Mark rcS file as executable</h5>
+
+<pre><code>    chmod +x etc/init.d/rcS  
+</code></pre>
+
+<h5>
+<a name="copy-our-custom-memory-device-driver-to-filesystem-optional" class="anchor" href="#copy-our-custom-memory-device-driver-to-filesystem-optional"><span class="octicon octicon-link"></span></a>Copy our Custom Memory Device Driver to filesystem (Optional)</h5>
+
+<blockquote>
+<p>Since we are planning to install our simple memory driver on the emulated ARM Linux system, 
+copy the driver files to any folder in this location, preferably create a new one.</p>
+
+<h5>
+<a name="copy-driver-ko-to-a-new-folder-memdriver" class="anchor" href="#copy-driver-ko-to-a-new-folder-memdriver"><span class="octicon octicon-link"></span></a>Copy Driver *.ko to a new folder, memDriver</h5>
+
+<pre><code>    mkdir memDrive/
+    cp &lt;path to driver files&gt; memDriver/
+</code></pre>
+</blockquote>
+
+<h5>
+<a name="create-the-root-filesystem-image-with-the-cpio-tool" class="anchor" href="#create-the-root-filesystem-image-with-the-cpio-tool"><span class="octicon octicon-link"></span></a>Create the root filesystem image with the cpio tool.</h5>
+
+<pre><code>    find . | cpio -o --format=newc &gt; ../rootfs.img
+</code></pre>
+
+<blockquote>
+<p>The root FileSystem should be create by the name <strong>rootfs.img</strong> 
+inside the <strong>busybox-1.21.1</strong> folder.</p>
+</blockquote>
+
+<h2>
+<a name="3-running-linux-with-busybox-on-linux-for-arm-on-qemu" class="anchor" href="#3-running-linux-with-busybox-on-linux-for-arm-on-qemu"><span class="octicon octicon-link"></span></a>3. Running Linux with BusyBox on Linux for ARM on QEMU</h2>
+
+<h5>
+<a name="installing-qemu" class="anchor" href="#installing-qemu"><span class="octicon octicon-link"></span></a>Installing QEMU</h5>
+
+<pre><code>    sudo apt-get install qemu
+</code></pre>
+
+<h5>
+<a name="start-qemu-for-arm-using-our-custom-kernel-and-busybox" class="anchor" href="#start-qemu-for-arm-using-our-custom-kernel-and-busybox"><span class="octicon octicon-link"></span></a>Start QEMU for ARM using our custom, Kernel and BusyBox.</h5>
+
+<pre><code>    qemu-system-arm -M vexpress-a9 -m 256M -kernel linux-3.10/arch/arm/boot/zImage -initrd busybox-1.21.1/rootfs.img -append "root=/dev/ram rdinit=/sbin/init"
+</code></pre>
+
+<blockquote>
+<p>A QEMU window should open up with kernel initialization messages 
+and finally a message asking, <em>press Enter to activate console</em>. 
+When you hit enter a root prompt is received and now you are running 
+<strong>Linux Kernel on an emulated ARM processor.</strong></p>
+</blockquote>
+
+<h2>
+<a name="4-loading-a-memory-driver-on-the-qemu-installation-optional" class="anchor" href="#4-loading-a-memory-driver-on-the-qemu-installation-optional"><span class="octicon octicon-link"></span></a>4. Loading a Memory Driver on the QEMU Installation (Optional)</h2>
+
+<h5>
+<a name="create-a-character-device-file-with-major-number-as-60-and-minor-number-as-0" class="anchor" href="#create-a-character-device-file-with-major-number-as-60-and-minor-number-as-0"><span class="octicon octicon-link"></span></a>Create a character device file with Major Number as 60 and minor number as 0.</h5>
+
+<pre><code>    mknod /dev/mymem c 60 0
+</code></pre>
+
+<h5>
+<a name="insert-our-driver-module-into-the-kernel" class="anchor" href="#insert-our-driver-module-into-the-kernel"><span class="octicon octicon-link"></span></a>Insert our driver module into the kernel.</h5>
+
+<pre><code>    cd memDriver/
+    insmod memory.ko
+</code></pre>
+
+<blockquote>
+<p>printk messages in module_init function should be now seen in <strong>dmesg|tail</strong>
+This should enable us to now read/write a single byte of data from/to memory.</p>
+</blockquote>
+
+<h5>
+<a name="write-to-device" class="anchor" href="#write-to-device"><span class="octicon octicon-link"></span></a>Write to device</h5>
+
+<pre><code>echo -n 4 &gt; /dev/mymem
+</code></pre>
+
+<h5>
+<a name="read-from-device" class="anchor" href="#read-from-device"><span class="octicon octicon-link"></span></a>Read from device</h5>
+
+<pre><code>cat /dev/mymem
+</code></pre>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
