@@ -110,8 +110,6 @@ mount -t sysfs none /sys
 ##4. Loading a Memory Driver on the QEMU Installation (Optional)
 #####Create a character device file with Major Number as 60 and minor number as 0.
         mknod /dev/mymem c 60 0
-#####Assign full permission to /dev/mymem
-        chmod 777 /dev/mymem
 #####Insert our driver module into the kernel.
         cd memDriver/
         insmod memory.ko
