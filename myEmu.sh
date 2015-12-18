@@ -1,9 +1,9 @@
 #!/bin/bash
 
-LINUX_VER=linux-3.10
-BUSYBOX_VER=busybox-1.21.1
-PROCESSOR_COUNT=4
-LINUX_KERNEL_FAMILY=3.0
+LINUX_VER=linux-4.3.2
+BUSYBOX_VER=busybox-1.24.1
+PROCESSOR_COUNT=8
+LINUX_KERNEL_FAMILY=4.x
 
 function runCheck {
     "$@"
@@ -36,15 +36,15 @@ mkdir -p $MY_DOWNLOADS
 cd $MY_DOWNLOADS
 if [ ! -f "$LINUX_VER.tar.bz2" ]; then
 	echo "$LINUX_VER not found in "$MY_DOWNLOADS". Downloading from kernel.org"
-	runCheck wget https://www.kernel.org/pub/linux/kernel/v$LINUX_KERNEL_FAMILY/$LINUX_VER.tar.bz2
+	runCheck wget https://www.kernel.org/pub/linux/kernel/v$LINUX_KERNEL_FAMILY/$LINUX_VER.tar.xz
 fi
 if [ ! -d "$MY_ROOT/$LINUX_VER/" ]; then
-	runCheck tar xvjf $LINUX_VER.tar.bz2
+	runCheck tar --xz -xvf $LINUX_VER.tar.xz
 	cp -r $LINUX_VER $MY_ROOT
 fi
 cd $MY_ROOT/$LINUX_VER/
 LINUX_SRC=`pwd`
-runCheck make vexpress_defconfig
+runCheck make versatile_defconfig
 runCheck make -j $PROCESSOR_COUNT all
 cd $MY_DOWNLOADS
 if [ ! -f "$BUSYBOX_VER.tar.bz2" ]; then
@@ -71,14 +71,14 @@ cp $MY_ROOT/rcS etc/init.d
 cd $MY_ROOT/memDriver/
 rm -rf memDriver/
 mkdir -p memDriver/
-cp src/memory.c memDriver/
-cp src/Makefile memDriver/
+#cp src/memory.c memDriver/
+#cp src/Makefile memDriver/
 cd memDriver/
-runCheck make -C $LINUX_SRC M=`pwd` modules
-MEM_DRIVER_KO=`pwd`/memory.ko
+#runCheck make -C $LINUX_SRC M=`pwd` modules
+#MEM_DRIVER_KO=`pwd`/memory.ko
 cd $BUSYBOX_INSTALL/memDriver/
-cp $MEM_DRIVER_KO .
+#cp $MEM_DRIVER_KO .
 cd $BUSYBOX_INSTALL
 find . | cpio -o --format=newc > $BUSYBOX_SRC/rootfs.img
-runCheck qemu-system-arm -M vexpress-a9 -m 256M -kernel $LINUX_SRC/arch/arm/boot/zImage -initrd $BUSYBOX_SRC/rootfs.img -append "root=/dev/ram rdinit=/sbin/init"
-
+echo "qemu-system-arm -M versatilepb -m 256M -kernel $LINUX_SRC/arch/arm/boot/zImage -initrd $BUSYBOX_SRC/rootfs.img"
+runCheck qemu-system-arm -M versatilepb -m 256M -kernel $LINUX_SRC/arch/arm/boot/zImage -initrd $BUSYBOX_SRC/rootfs.img -append "root=/dev/ram rdinit=/sbin/init"
