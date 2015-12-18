@@ -34,7 +34,7 @@ if [ $CLEAN -ne 0 ]; then
 fi
 mkdir -p $MY_DOWNLOADS
 cd $MY_DOWNLOADS
-if [ ! -f "$LINUX_VER.tar.bz2" ]; then
+if [ ! -f "$LINUX_VER.tar.xz" ]; then
 	echo "$LINUX_VER not found in "$MY_DOWNLOADS". Downloading from kernel.org"
 	runCheck wget https://www.kernel.org/pub/linux/kernel/v$LINUX_KERNEL_FAMILY/$LINUX_VER.tar.xz
 fi
@@ -71,8 +71,8 @@ cp $MY_ROOT/rcS etc/init.d
 cd $MY_ROOT/memDriver/
 rm -rf memDriver/
 mkdir -p memDriver/
-#cp src/memory.c memDriver/
-#cp src/Makefile memDriver/
+cp src/memory.c memDriver/
+cp src/Makefile memDriver/
 cd memDriver/
 #runCheck make -C $LINUX_SRC M=`pwd` modules
 #MEM_DRIVER_KO=`pwd`/memory.ko
