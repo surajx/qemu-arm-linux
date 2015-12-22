@@ -83,7 +83,7 @@ mount -t sysfs none /sys
 #####Mark rcS file as executable
         chmod +x etc/init.d/rcS  
 
-#####Copy our Custom Memory Device Driver to filesystem (Broken)
+#####Copy our Custom Memory Device Driver to filesystem (Optional)
   >Since we are planning to install our simple memory driver on the emulated ARM Linux system, 
   >copy the driver files to any folder in this location, preferably create a new one.
 #####Copy Driver *.ko to a new folder, memDriver
@@ -107,7 +107,7 @@ mount -t sysfs none /sys
   >**Linux Kernel on an emulated ARM processor.**
 
 
-##4. Loading a Memory Driver on the QEMU Installation (Broken)
+##4. Loading a Memory Driver on the QEMU Installation (Optional)
 #####Create a character device file with Major Number as 60 and minor number as 0.
         mknod /dev/mymem c 60 0
 #####Insert our driver module into the kernel.
