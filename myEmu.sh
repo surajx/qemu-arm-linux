@@ -74,10 +74,10 @@ mkdir -p memDriver/
 cp src/memory.c memDriver/
 cp src/Makefile memDriver/
 cd memDriver/
-#runCheck make -C $LINUX_SRC M=`pwd` modules
-#MEM_DRIVER_KO=`pwd`/memory.ko
+runCheck make -C $LINUX_SRC M=`pwd` modules
+MEM_DRIVER_KO=`pwd`/memory.ko
 cd $BUSYBOX_INSTALL/memDriver/
-#cp $MEM_DRIVER_KO .
+cp $MEM_DRIVER_KO .
 cd $BUSYBOX_INSTALL
 find . | cpio -o --format=newc > $BUSYBOX_SRC/rootfs.img
 echo "qemu-system-arm -M versatilepb -m 256M -kernel $LINUX_SRC/arch/arm/boot/zImage -initrd $BUSYBOX_SRC/rootfs.img"

@@ -8,7 +8,6 @@
 #include <linux/types.h> /* size_t */
 #include <linux/proc_fs.h>
 #include <linux/fcntl.h> /* O_ACCMODE */
-#include <asm/system.h> /* cli(), *_flags */
 #include <asm/uaccess.h> /* copy_from/to_user */
 
 MODULE_LICENSE("Dual BSD/GPL");
