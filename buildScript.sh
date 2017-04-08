@@ -1,10 +1,21 @@
 #!/bin/bash
 
+# Usage
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+    echo "Usage:"
+    echo "./buildScript.sh         : Uses existing build of linux and busybox"
+    echo "./buildScript.sh --clean : Removes existing build of linux and busybox and builds from scratch"
+    exit
+fi
+
+# Version Configuration
 LINUX_VER=linux-4.3.2
 BUSYBOX_VER=busybox-1.24.1
 PROCESSOR_COUNT=8
 LINUX_KERNEL_FAMILY=4.x
 
+# Runs a command, checks if it was successful and exits
+# the script if the command failed.
 function runCheck {
     "$@"
     status=$?
@@ -14,24 +25,34 @@ function runCheck {
     fi
     return $status
 }
+
 echo "This is NOT a silent install, there are passwords to enter and menuconfigs to configure. Refer GitHub Wiki for more details."
 echo "Checking availability"
 echo "ARM GCC CROSS COMPILER: gcc-arm-linux-gnueabi"
 echo "QEMU HARDWARE EMULATOR: qemu"
 echo "NCURSES DEV Library: libncurses5-dev"
+
+# Installs cross-compiler qemu and dependencies.
 sudo apt-get install gcc-arm-linux-gnueabi qemu libncurses5-dev
-CLEAN=0
-if [ "$1" == "clean" ]; then
-	CLEAN=1
+
+# Remove existing version of linux and busybox
+if [ "$1" == "--clean" ]; then
+	echo "Deleting Current Compiled Code from:"
+	echo "(1) "`pwd`"/"$LINUX_VER
+	echo "(2) "`pwd`"/"$BUSYBOX_VER
+	read -p "Are you sure you want to delete[Yy/Nn]? " -n 1 -r
+	echo
+	if [[ $REPLY =~ ^[Yy]$ ]]
+	then	
+		rm -rf $LINUX_VER/ $BUSYBOX_VER/
+	fi
 fi
+
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabi-
 MY_ROOT=`pwd`
 MY_DOWNLOADS=$MY_ROOT/downloads/
-if [ $CLEAN -ne 0 ]; then
-	echo "Deleting Current Compiled Code."
-	rm -rf $LINUX_VER/ $BUSYBOX_VER/
-fi
+
 mkdir -p $MY_DOWNLOADS
 cd $MY_DOWNLOADS
 if [ ! -f "$LINUX_VER.tar.xz" ]; then
